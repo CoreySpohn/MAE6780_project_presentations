@@ -93,12 +93,10 @@ A hurricane's wind field can be written as a radial velocity, $V_r$, that varies
         \end{figure}
         \end{column}
     \end{columns}
-
-    
 \end{frame}
 
 \begin{frame}[t]
-    \frametitle{Model Predictive Control (MPC) Theory}
+    \frametitle{Model Predictive Control (MPC) Intuition}
     %\framesubtitle{subtitle}
     Model predictive control is a fairly broad field of controls, all of which have the following characteristics
     \begin{itemize}
@@ -115,29 +113,13 @@ A hurricane's wind field can be written as a radial velocity, $V_r$, that varies
     \end{figure}
 \end{frame}
 
-\begin{frame}{Model Predictive Control (MPC)}
-    \begin{itemize}
-        \item Quadratic cost function with a finite horizon
-        \begin{eqnarray*}
-        J = & \int_0^{T_{p}} \! [\mathbf{x}(t_{i}+\tau|t_{i})^T\mathbf{Q}\mathbf{x}(t_{i}+\tau|t_{i}) +\Dot{\mathbf{u}}(\tau)^T\mathbf{R}\Dot{\mathbf{u}}(\tau)] \, \mathrm{d}\tau 
-        \end{eqnarray*}
-        \item Incremental control implementation\\
-            $ \mathbf{u}(t\rightarrow{t+1}) = -\mathbf{K}_{mpc}*\mathbf{x}(t)$
-    \end{itemize}
-    \begin{figure}
-        \centering
-        \includegraphics[width=0.55\textwidth]{MPC_scheme_basic.pdf}
-        \caption{MPC Strategy, from Wikipedia}
-    \end{figure}
-\end{frame}
-
 \begin{frame}{MPC pros/cons}
     \begin{columns}
     
     \begin{column}{0.5\textwidth}
     \centering
     Pros\\
-    \hline
+    \hrule
     \hfill
     \begin{itemize}
         \item Works well with MIMO systems
@@ -149,19 +131,109 @@ A hurricane's wind field can be written as a radial velocity, $V_r$, that varies
     \end{column}
     \begin{column}{0.5\textwidth}
     \centering
-    Cons
-    
-    \hline
+    Cons\\
+    \hrule
     \hfill
     \begin{itemize}
         \item MPC is an online process that requires a processor with enough computing power and memory to handle the optimization in real time
         \item It is non-trivial to choose appropriate weights for terminal and control costs with a complex MIMO system
         \item It is non-trivial to choose the prediction horizon, control horizon, and time-step
-        
     \end{itemize}
     \end{column}
     \end{columns}
 \end{frame}
+
+\begin{frame}{Our MPC Process}
+    \begin{itemize}
+        \item Create discrete time linear plant, disturbance, and noise models
+        \item Estimate future plant outputs, $y$, based on the current state, $x_c$
+        \item Calculate the next control input by solving the quadratic programming optimization
+            problem with the plant outputs, constraints, and a cost function.
+        \item Apply the control step
+        \item Calculate the next $x_c$
+        %\item Incremental control implementation\\
+            %$ \mathbf{u}(t\rightarrow{t+1}) = -\mathbf{K}_{mpc}*\mathbf{x}(t)$
+    \end{itemize}
+    \begin{figure}
+        \centering
+        \includegraphics[width=0.5\textwidth]{MPC_scheme_basic.pdf}
+        \caption{MPC Strategy, from Wikipedia}
+    \end{figure}
+\end{frame}
+
+\begin{frame}[t]
+    \frametitle{Estimation}
+    %\framesubtitle{}
+    We create a state vector $x_{c}$ and a prediction horizon $p$
+    \begin{align*}
+        x_c^{T}(k) = 
+\begin{bmatrix}
+    x_p^{T}(k) & x^{T}_{id}(k) & x^{T}_{od}(k) & x^{T}_{n}(k) \\
+\end{bmatrix}
+    .\end{align*}
+    \begin{itemize}
+        \item $x_p$ is the plant model state vector
+        \item $x_{id}$ is the input disturbance model state vector
+        \item $x_{od}$ is the output disturbance model state vector
+        \item $x_{n}$ is the measurement noise model state vector
+    \end{itemize}
+    Then estimate the future states at steps $i=1, 2, \ldots, p$, denoted $x_c\left( k+i|k \right)$, using a Kalman filter,
+    which are then used to predict the predicted plant outputs 
+    \begin{align*}
+        y\left( k+i|k \right) = C x_c\left( k+i|k \right) 
+    .\end{align*}
+\end{frame}
+
+\begin{frame}[t]
+    \frametitle{Solving the Optimization Problem}
+    %\framesubtitle{subtitle}
+    The quadratic program (QP) optimization problem consists of
+    \begin{itemize}
+        \item Decision ($z_k$), a vector of future control inputs
+        \item The cost function
+            \begin{align*}
+                J(z_k) = J_y(z_k) + J_u (z_k) + J_{\Delta u}(z_k) + J_{\epsilon} (z_k)
+            .\end{align*}
+            \begin{itemize}
+                \item $J_y$ is the cost of keeping outputs near their reference tracking values
+                \item $J_u$ is cost of keeping manipulated variables near their target values
+                \item $J_{\Delta u}$ constrains the how fast manipulated variables can be adjusted
+                \item $J_{\epsilon}$ is the cost of constraint violations
+            \end{itemize}
+    \end{itemize}
+    For $J_y$, $J_u$, and $J_{\Delta u}$ we create scale factors, $s$, and tuning weights, $w$, that
+    multiply the difference between the target/reference value $r$ and the current value $y$, and sum for
+    all state variables $n_y$ for the duration of the prediction horizon $p$
+    \begin{align*}
+        J_{y, u, \Delta u}(z_k) = \sum_{j=1}^{n_y} \sum_{i=1}^{p} \left\{ \frac{w_{i, j}}{s_j}
+        \left[ r_j \left( k+i|k \right) - y\left( k+i|k \right)  \right]  \right\} 
+    .\end{align*}
+\end{frame}
+
+\begin{frame}[t]
+    \frametitle{Solving the Optimization Problem}
+    %\framesubtitle{subtitle}
+    For $J_{\epsilon}$ we define a constraint violation penalty weight $\rho_{\epsilon}$ and a
+    variable that represents the worst case constraint violation at the current step $\epsilon_k$ 
+    \begin{align*}
+        J_{\epsilon}(z_k) = \rho_{\epsilon} \epsilon_k ^2
+    .\end{align*}
+    Currently we're finding our optimal decision $z(k)$ with the default MATLAB QP
+    solver which implements an active-set solver based on the KWIK algorithm. The first element of
+    the decision is $u(k)$ which we can implement.
+    %Then we solve the optimization problem based on the general form QP problem
+    %\begin{align*}
+        %\min_{z_k}\left( \frac{1}{2}z_k^{T} H z_k \right) 
+    %.\end{align*}
+    %$H$ here is the Hessian matrix based off of the cost function
+\end{frame}
+
+%\begin{frame}[t]
+    %\frametitle{Estimation}
+    %%\framesubtitle{subtitle}
+    %A Kalman filter is used to predict future states
+    
+%\end{frame}
 
 \begin{frame}[t]
     \frametitle{MPC in MATLAB}
@@ -403,11 +475,13 @@ A hurricane's wind field can be written as a radial velocity, $V_r$, that varies
         \item New reaching condition $|\sigma(k+1)|-|\sigma(k)|<0$ (The next iteration is always less in magnitude.)
     \end{itemize}
     Reaching Law:
-    \begin{cases}
-       s_r(k+p)=(1-qT)s_r(k+p-1)\xi(k)\\
-        -\epsilon Tsgn(s(k+p-1))\psi(k)\\
-        s_r(k)=s(k)
-    \end{cases}
+    \begin{align*}
+        \begin{cases}
+           s_r(k+p)=(1-qT)s_r(k+p-1)\xi(k)\\
+            -\epsilon Tsgn(s(k+p-1))\psi(k)\\
+            s_r(k)=s(k)
+        \end{cases}
+    \end{align*}
     
     
     Where $\xi$ is a factor to allow for an exponential reaching law outside of the vicinity of the sliding mode and $\psi$ acts as a smoother to reduce chatter in the vicinity of the sliding mode.
