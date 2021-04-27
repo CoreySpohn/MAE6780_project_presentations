@@ -80,7 +80,7 @@ A hurricane's wind field can be written as a radial velocity, $V_r$, that varies
         \begin{align}
         V_r = 
         \begin{cases}
-                V_{max} \left( frac{r}{R_{max}}\right)^{\frac{3}{2}}, & r <
+                V_{max} \left( {\frac{r}{R_{max}}\right)^{\frac{3}{2}}, & r <
                 R_{max} \\
                 V_{max} \left( \frac{2 R_{max} r}{r^2 + R_{max}^2} \right), & r \geq R_{max} 
         \end{cases}
@@ -342,7 +342,7 @@ A hurricane's wind field can be written as a radial velocity, $V_r$, that varies
     
     The first requirement implies:
     \begin{itemize}
-        \item $\dot{\sigma}=\dot{x_2}+\dot{x_1}=f_2(X,t)+g_2(X,u,t)+Cx_2$
+        \item $\dot{\sigma}=\dot{x_2}+C\dot{x_1}=f_2(X,t)+g_2(X,u,t)+Cx_2$
     \end{itemize}
     
     If the first requirement is met then we can design a $\dot{\sigma}$ that meets the second requirement, one such is:
