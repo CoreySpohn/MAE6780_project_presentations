@@ -1,0 +1,62 @@
+\documentclass[a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{babel}
+\usepackage{amsmath, amssymb}
+
+
+% figure support
+\usepackage{import}
+\usepackage{xifthen}
+\pdfminorversion=7
+\usepackage{pdfpages}
+\usepackage{transparent}
+\newcommand{\incfig}[1]{%
+    \def\svgwidth{\columnwidth}
+    \import{./figures/}{#1.pdf_tex}
+}
+
+\pdfsuppresswarningpagegroup=1
+
+\title{Report Skeleton}
+
+\begin{document}
+    \maketitle
+
+    \section{Abstract}%
+    \label{sec:abstract}
+    
+    \section{Introduction and theory}%
+    \label{sec:introduction_and_theory}
+    
+    \subsection{MPC}%
+    \label{sub:mpc}
+    
+    \subsection{SMC}%
+    \label{sub:smc}
+    
+    \section{Procedure}%
+    \label{sec:procedure}
+
+    \subsection{MPC}%
+    \label{sub:mpc}
+    
+    \subsection{SMC}%
+    \label{sub:smc}
+    
+    \section{Results}%
+    \label{sec:results}
+
+    \subsection{MPC}%
+    \label{sub:mpc}
+   
+    \subsection{SMC}%
+    \label{sub:smc}
+
+    
+    \section{Conclusions}%
+    \label{sec:conclusions}
+    
+\end{document}
