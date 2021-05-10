@@ -49,9 +49,20 @@
   \titlepage
 \end{frame}
 
-\begin{frame}{Aircraft Dynamics}
+\begin{frame}{Problem Statement}
+    To determine airspeed of a tropical storm manned flights are sent into them, commonly called hurricane hunters.
+    \begin{figure}
+        \centering
+        \includegraphics[scale = .75]{300px-Lockheed_WP-3D_Orion.jpg}
+        \caption{NOAA WP-3D weather reconnaissance aircraft}
+        \label{fig:my_label}
+    \end{figure}
+    These missions are very dangerous and have resulted in 53 deaths since they started. So let's make a robot do them.
+\end{frame}
+
+\begin{frame}{Fixed Wing Aircraft Dynamics}
     \begin{itemize}
-        \item State
+        \item State $\mathbf{x}$, where $\mathbf{v}_B^T$ is the body-axis inertial velocity, $\mathbf{r}_I^T$ is the CoM position w.r.t. Earth, $\boldsymbol{\omega}_B^T$ is the body-axis roll/pitch/yaw rates, $\boldsymbol{\Theta}^T$ is the roll/pitch/yaw w.r.t. Earth.
         \begin{equation*}
             \mathbf{x} = \begin{bmatrix}
                 \mathbf{v}_B^T &
@@ -70,6 +81,7 @@
         \begin{equation*}
             \dot{\mathbf{x}} = \mathbf{f}(\mathbf{x},\mathbf{u},t)
         \end{equation*}
+        \item The controls are the aircraft throttle and the elevator, aileron, rudder, flap, stabilator, and spoiler angles.
     \end{itemize}
 \end{frame}
 
@@ -80,7 +92,7 @@ A hurricane's wind field can be written as a radial velocity, $V_r$, that varies
         \begin{align}
         V_r = 
         \begin{cases}
-                V_{max} \left( {\frac{r}{R_{max}}\right)^{\frac{3}{2}}, & r <
+                V_{max} \left(\frac{r}{R_{max}}\right)^{\frac{3}{2}}, & r <
                 R_{max} \\
                 V_{max} \left( \frac{2 R_{max} r}{r^2 + R_{max}^2} \right), & r \geq R_{max} 
         \end{cases}
@@ -94,6 +106,8 @@ A hurricane's wind field can be written as a radial velocity, $V_r$, that varies
         \end{column}
     \end{columns}
 \end{frame}
+
+\section{Model Predictive Control}
 
 \begin{frame}[t]
     \frametitle{Model Predictive Control (MPC) Intuition}
@@ -289,6 +303,8 @@ A hurricane's wind field can be written as a radial velocity, $V_r$, that varies
     \end{columns}
 \end{frame}
 
+\section{Sliding Mode Control}
+
 \begin{frame}[t]
     \frametitle{Sliding Mode Control Motivation: Phase Space Constraint}
     %\framesubtitle{test}
@@ -468,6 +484,7 @@ A hurricane's wind field can be written as a radial velocity, $V_r$, that varies
     \includegraphics[width=0.49\textwidth]{sm_rpy.png}
 \end{frame}
 
+\section{Next Steps}
 \begin{frame}{Way Ahead - Combining MPC and Sliding Mode}
     Discrete Sliding Mode:
     \begin{itemize}
@@ -506,7 +523,25 @@ A hurricane's wind field can be written as a radial velocity, $V_r$, that varies
     Nizar 2013 \cite{NizarMPCSMC}; Xiao et. al., 2006 \cite{XiaoMPCSMC}
 \end{frame}
 
-\begin{frame}{References}
+
+\begin{frame}{Way Ahead - More Complex Trajectory Following}
+    \begin{columns}
+        \begin{column}{0.5\textwidth}
+            \begin{figure}
+                \centering
+                \includegraphics[width=1\textwidth]{FieldFollowingTrajectory.jpg}
+            \end{figure}
+        \end{column}
+        \begin{column}{0.5\textwidth}
+            \begin{figure}
+                \centering
+                \includegraphics[width=1\textwidth]{FieldFollowingTrajectory2.jpg}
+            \end{figure}
+        \end{column}
+    \end{columns}
+\end{frame}
+
+\begin{frame}[allowframebreaks]{References}
     \nocite{*}
     \footnotesize
     \bibliographystyle{ieeetr}
